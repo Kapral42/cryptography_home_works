@@ -12,7 +12,7 @@ long int expo_mod(long int x, long int ex, long int p)
    return result % p;
 }
 
-int gcd(long int a, long int b, long int *x, long int *y, long int *res)
+long int gcd(long int a, long int b, long int *x, long int *y)
 {
     long int U_array[] = {a, 1, 0};
     long int V_array[] = {b, 0, 1};
@@ -32,45 +32,77 @@ int gcd(long int a, long int b, long int *x, long int *y, long int *res)
         V = T;
         T = swop_p;
     }
-    *res = U[0];
-    *x = U[1];
-    *y = U[2];
-    return 0;
+    if (x != NULL && y != NULL) {
+        *x = U[1];
+        *y = U[2];
+    }
+    return U[0];
 }  
+
+bool ferma(long int x)
+{
+    long int a;
+ //   srand(time(NULL));
+
+    if(!(x % 2)) {
+        return false;
+    }
+    for(int i = 0; i < 100; i++){
+        a = (rand() % (x - 2)) + 2;
+        if (gcd(a, x, NULL, NULL) != 1)
+            return false;           
+        if( expo_mod(a, x - 1, x) != 1)       
+            return false;           
+    }
+    return true;
+}
 
 long int simple_rand()
 {
-    srand(time(NULL));
-    int flg = 0;
-    while (!flg){
-        long int rand_v = rand() * 4;
-        for (long int i = 2; i < log(rand_v); i++) {
-            if (rand_v % i == 0) {
-                flg = 1;
-                break;
-            }
-        }
-        if (!flg) {
+    long int rand_v;
+    
+//    srand(time(NULL));
+    while (1){
+        rand_v = rand();
+        if (ferma(rand_v)) {
             return rand_v;
-        } else {
-            flg = 0;
         }
     }
     return -1; 
 }
 
-long int DH_A_1(long int *a long int *g, long int *p)
+/*
+*   User A  |  User B
+*   a, g, p |    b
+*   A=g^a%p |
+*        (g,p)->
+*           |  B=g^b%p
+*          (A)->
+*        <-(B)
+*   K=B^a%p | K=A^b%p
+*/
+
+long int DH_A_1(long int *a, long int *g, long int *p)
 {
     *a = simple_rand();
     *g = simple_rand();
     *p = simple_rand();
-    if (a == -1 || *g == -1 || *p == -1) return -1;
-    long int A  = expo_mod(g,a,p);
+    if (*a == -1 || *g == -1 || *p == -1) return -1;
+    long int A  = expo_mod(*g, *a, *p);
     return A;
 }
 
-long int DH_A_2(long int B)
+long int DH_B_1(long int *b, long int g, long int p)
 {
-    return expo_mod(B, )
+    *b = simple_rand();
+    if (*b == -1) return -1;
+    long int B  = expo_mod(g, *b, p);
+    return B;
+}
+
+long int DH_AB_2(long int AB, long int ab, long int p)
+{
+    /* return Key */
+    return expo_mod(AB, ab, p); 
 }
 
