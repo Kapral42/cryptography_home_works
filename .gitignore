@@ -1,0 +1,6 @@
+prog
+*.o
+*.djvu
+*.odt
+*.odt#
+run.sh
