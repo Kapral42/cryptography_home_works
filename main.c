@@ -44,5 +44,9 @@ int main(int argc, const char *argv[])
         }
     }
 
+    printf("\nTest baby-step giant-step:\n");
+    printf("2^x = 28 mod 37, x = %ld\n", bsgs(2, 28, 37));
+    printf("6^x = 7531 mod 8101, x = %ld\n", bsgs(6, 7531, 8101));
+
     return 0;
 }

@@ -106,3 +106,28 @@ long int DH_AB_2(long int AB, long int ab, long int p)
     return expo_mod(AB, ab, p); 
 }
 
+long int bsgs(long int a, long int b, long int p)
+{
+    long int n = (int) sqrt (p + .0) + 1;
+    long int b_step, i, j, x;
+
+    if (hashtab_init(n + 1)) {
+        return -1;
+    }
+
+    for (i = 1; i <= n; i++) {
+        hashtab_push(i, expo_mod(a, i * n, p));
+    }
+    for (i = 0; i <= n; ++i) {
+        b_step = (expo_mod(a, i, p) * b) % p;
+        j = hashtab_get_index(b_step);
+        if (j >= 0) {
+            x = j * n - i;
+            if (x < p)
+                hashtab_free();
+                return x;
+        }
+    }
+    hashtab_free();
+    return -1;
+}

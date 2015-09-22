@@ -1,9 +1,9 @@
 prog := prog
-prog_objs := functions.o main.o 
+prog_objs := functions.o hashtab.o main.o 
 
 CXX := gcc
-CXXFLAGS := -g -std=c11 -Wall -O2
-LDFLAGS :=
+CXXFLAGS := -g -std=c11 -Wall -O0
+LDFLAGS := -lm
 
 .PHONY: all clean
 
