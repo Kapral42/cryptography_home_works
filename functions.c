@@ -63,7 +63,7 @@ long int simple_rand()
     
 //    srand(time(NULL));
     while (1){
-        rand_v = rand();
+        rand_v = rand() + 1;
         if (ferma(rand_v)) {
             return rand_v;
         }
@@ -85,8 +85,20 @@ long int simple_rand()
 long int DH_A_1(long int *a, long int *g, long int *p)
 {
     *a = simple_rand();
-    *g = simple_rand();
-    *p = simple_rand();
+    long int q = 0;
+    while (!q) {
+        *p = simple_rand();
+        if (ferma((*p - 1) / 2)) {
+            q = (*p - 1) / 2;
+        }
+    }
+    *g = 0;
+    while (!*g) {
+        *g = simple_rand();
+        if (*g >= *p || expo_mod(*g, q, *p) == 1) {
+           *g = 0; 
+        }
+    }
     if (*a == -1 || *g == -1 || *p == -1) return -1;
     long int A  = expo_mod(*g, *a, *p);
     return A;

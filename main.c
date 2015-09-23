@@ -27,6 +27,9 @@ int main(int argc, const char *argv[])
     printf("7 : %d\n", ferma(7));
     printf("21252211 : %d\n", ferma(21252211));
     printf("21252212 : %d\n", ferma(21252212));
+    printf("4033 : %d\n", ferma(4033));
+    printf("561 : %d\n", ferma(561));
+    printf("41041 : %d\n", ferma(41041));
 
     printf("\nTest simple_rand:\n");
     for (int i = 0; i < 10; i++) {
@@ -38,6 +41,7 @@ int main(int argc, const char *argv[])
         long int a, b, A, B, g, p; 
         for (int i = 0; i < 10; i++) {
             A = DH_A_1(&a, &g, &p);
+            printf("g: %ld p: %ld\n", g, p);
             B = DH_B_1(&b, g, p);
             printf("Key A: %ld\n", DH_AB_2(B, a, p));
             printf("Key B: %ld\n...\n", DH_AB_2(A, b, p));
