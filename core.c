@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "decl.h"
 
 long int expo_mod(long int x, long int ex, long int p)
 {
@@ -14,10 +14,17 @@ long int expo_mod(long int x, long int ex, long int p)
 
 long int gcd(long int a, long int b, long int *x, long int *y)
 {
-    long int U_array[] = {a, 1, 0};
-    long int V_array[] = {b, 0, 1};
+    long int U_array[] = {MAX(a, b), 1, 0};
+    long int V_array[] = {MIN(a, b), 0, 1};
     long int T_array[3];
     long int q, *swop_p, *U, *V, *T;
+
+    q = MAX(a, b);
+    if (q != a) {
+        swop_p = x;
+        x = y;
+        y = swop_p;
+    }
 
     U = U_array;
     V = V_array;
@@ -25,24 +32,25 @@ long int gcd(long int a, long int b, long int *x, long int *y)
     while (V[0] != 0) {
         q = U[0] / V[0];
         T[0] = U[0] % V[0];
-        T[1] = U[1] - q * V[1]; 
-        T[2] = U[2] - q * V[2]; 
+        T[1] = U[1] - q * V[1];
+        T[2] = U[2] - q * V[2];
         swop_p = U;
         U = V;
         V = T;
         T = swop_p;
     }
-    if (x != NULL && y != NULL) {
+    if (x != NULL) {
         *x = U[1];
+    }
+    if (y != NULL) {
         *y = U[2];
     }
     return U[0];
-}  
+}
 
 bool ferma(long int x)
 {
     long int a;
- //   srand(time(NULL));
 
     if(!(x % 2)) {
         return false;
@@ -50,9 +58,9 @@ bool ferma(long int x)
     for(int i = 0; i < 100; i++){
         a = (rand() % (x - 2)) + 2;
         if (gcd(a, x, NULL, NULL) != 1)
-            return false;           
-        if( expo_mod(a, x - 1, x) != 1)       
-            return false;           
+            return false;
+        if( expo_mod(a, x - 1, x) != 1)
+            return false;
     }
     return true;
 }
@@ -60,15 +68,15 @@ bool ferma(long int x)
 long int simple_rand()
 {
     long int rand_v;
-    
-//    srand(time(NULL));
+
+    srand(clock());
     while (1){
         rand_v = rand() + 1;
         if (ferma(rand_v)) {
             return rand_v;
         }
     }
-    return -1; 
+    return -1;
 }
 
 /*
@@ -84,7 +92,6 @@ long int simple_rand()
 
 long int DH_A_1(long int *a, long int *g, long int *p)
 {
-    *a = simple_rand();
     long int q = 0;
     while (!q) {
         *p = simple_rand();
@@ -95,10 +102,14 @@ long int DH_A_1(long int *a, long int *g, long int *p)
     *g = 0;
     while (!*g) {
         *g = simple_rand();
-        if (*g >= *p || expo_mod(*g, q, *p) == 1) {
-           *g = 0; 
+        if (*g >= *p - 1 || expo_mod(*g, q, *p) == 1) {
+           *g = 0;
         }
     }
+    do {
+        *a = simple_rand();
+    } while (*a >= *p - 1);
+
     if (*a == -1 || *g == -1 || *p == -1) return -1;
     long int A  = expo_mod(*g, *a, *p);
     return A;
@@ -106,7 +117,9 @@ long int DH_A_1(long int *a, long int *g, long int *p)
 
 long int DH_B_1(long int *b, long int g, long int p)
 {
-    *b = simple_rand();
+    do {
+        *b = simple_rand();
+    } while (*b >= p - 1);
     if (*b == -1) return -1;
     long int B  = expo_mod(g, *b, p);
     return B;
@@ -115,31 +128,73 @@ long int DH_B_1(long int *b, long int g, long int p)
 long int DH_AB_2(long int AB, long int ab, long int p)
 {
     /* return Key */
-    return expo_mod(AB, ab, p); 
+    return expo_mod(AB, ab, p);
 }
 
 long int bsgs(long int a, long int b, long int p)
 {
     long int n = (int) sqrt (p + .0) + 1;
     long int b_step, i, j, x;
+    struct hashtab *h_tab;
 
-    if (hashtab_init(n + 1)) {
+    h_tab = hashtab_init(n + 1);
+    if (h_tab == NULL) {
         return -1;
     }
 
     for (i = 1; i <= n; i++) {
-        hashtab_push(i, expo_mod(a, i * n, p));
+        hashtab_push(h_tab, i, expo_mod(a, i * n, p));
     }
     for (i = 0; i <= n; ++i) {
         b_step = (expo_mod(a, i, p) * b) % p;
-        j = hashtab_get_index(b_step);
+        j = hashtab_get_index(h_tab, b_step);
         if (j >= 0) {
             x = j * n - i;
             if (x < p)
-                hashtab_free();
+                hashtab_free(h_tab);
                 return x;
         }
     }
-    hashtab_free();
+    hashtab_free(h_tab);
     return -1;
+}
+
+long int part_lint(void *m, long int *len)
+{
+    unsigned char *mas;
+    unsigned char byte;
+    long int res = 0;
+    int size = sizeof(long int);
+
+    if (*len < 1) {
+        return -1;
+    }
+    mas = (unsigned char*) m;
+    for (int i = 0; i < size / 2 && *len > 0; i++) {
+        byte = mas[0];
+        mas++;
+        *len--;
+        res = res << 8;
+        res += byte;
+    }
+    return res;
+}
+
+long int inversion(long int *c, long int *d, long int p)
+{
+    long int x, y;
+    unsigned long int big_c, big_d, big_p;
+
+    do {
+        *c = simple_rand();
+    } while (gcd(*c, p, &x, &y) != 1);
+
+    big_c = *c;
+    big_p = p;
+
+ //   *d = y < 0 ? p + y : y;
+    *d = x < 0 ? p + x : x;
+    big_d = *d;
+
+    return (big_c * big_d) % big_p;
 }

@@ -8,12 +8,16 @@ struct node
     struct node* next;
 };
 
-int N;
-struct node **tab;
+struct hashtab
+{
+    struct node **tab;
+    long int size;
+};
 
-int hashtab_init(long int n);
-int hashtab_push(long int index, long int val);
-long int hashtab_get_index(long int val);
-int hashtab_free();
+
+struct hashtab *hashtab_init(long int n);
+int hashtab_push(struct hashtab *h_tab, long int index, long int val);
+long int hashtab_get_index(struct hashtab *h_tab, long int val);
+int hashtab_free(struct hashtab *h_tab);
 
 #endif

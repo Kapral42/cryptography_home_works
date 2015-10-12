@@ -2,23 +2,30 @@
 
 #include "hashtab.h"
 
-int hashtab_init(long int n)
+struct hashtab *hashtab_init(long int n)
 {
+    struct hashtab *h_tab;
+
     if (n < 1) {
-        return 1;
+        return NULL;
     }
-    tab = (struct node**) malloc(sizeof(struct node*) * n);
-    if (tab == NULL) {
-        return 1;
+    h_tab = malloc(sizeof(struct hashtab));
+    if (h_tab == NULL) {
+        return NULL;
     }
-    N = n;
-    return 0; 
+    h_tab->tab = (struct node**) malloc(sizeof(struct node*) * n);
+    if (h_tab->tab == NULL) {
+        return NULL;
+    }
+    h_tab->size = n;
+    return h_tab;
 }
 
-int hashtab_push(long int index, long int val)
+int hashtab_push(struct hashtab *h_tab, long int index, long int val)
 {
     long int i;
     struct node *tmp_node;
+    struct node **tab = h_tab->tab;
 
     tmp_node = (struct node*) malloc(sizeof(struct node));
     if (tmp_node == NULL) {
@@ -28,7 +35,7 @@ int hashtab_push(long int index, long int val)
     tmp_node->index = index;
     tmp_node->next = NULL;
 
-    i = val % N;
+    i = val % h_tab->size;
     if (tab[i] == NULL) {
         tab[i] = tmp_node;
     } else {
@@ -41,12 +48,13 @@ int hashtab_push(long int index, long int val)
     return 0;
 }
 
-long int hashtab_get_index(long int val)
+long int hashtab_get_index(struct hashtab *h_tab, long int val)
 {
     long int i;
     struct node *tmp_node;
+    struct node **tab = h_tab->tab;
 
-    i = val % N;
+    i = val % h_tab->size;
     tmp_node = tab[i];
     while(tmp_node != NULL) {
         if (tmp_node->val == val) {
@@ -57,12 +65,13 @@ long int hashtab_get_index(long int val)
     return -1;
 }
 
-int hashtab_free()
+int hashtab_free(struct hashtab *h_tab)
 {
     long int i;
     struct node *tmp_node;
+    struct node **tab = h_tab->tab;
 
-    for (i = 0; i < N; i++) {
+    for (i = 0; i < h_tab->size; i++) {
         while(tab[i] != NULL) {
             tmp_node = tab[i];
             tab[i] = tab[i]->next;
@@ -70,5 +79,6 @@ int hashtab_free()
         }
     }
     free(tab);
+    free(h_tab);
     return 0;
 }

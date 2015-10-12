@@ -1,5 +1,9 @@
+ifndef test
+test=core
+endif
+
 prog := prog
-prog_objs := functions.o hashtab.o main.o 
+prog_objs := core.o hashtab.o ciphers.o test_$(test).o
 
 CXX := gcc
 CXXFLAGS := -g -std=c11 -Wall -O0
