@@ -1,9 +1,9 @@
 #include "decl.h"
 
-long int expo_mod(long int x, long int ex, long int p)
+crypto_int expo_mod(crypto_int x, crypto_int ex, crypto_int p)
 {
-   long int result = 1;
-   for (long int na = abs(ex); na > 0; na >>= 1) {
+   crypto_int result = 1;
+   for (crypto_int na = abs(ex); na > 0; na >>= 1) {
        if (na % 2 == 1) {
            result = (result * x) % p;
        }
@@ -12,12 +12,12 @@ long int expo_mod(long int x, long int ex, long int p)
    return result % p;
 }
 
-long int gcd(long int a, long int b, long int *x, long int *y)
+crypto_int gcd(crypto_int a, crypto_int b, crypto_int *x, crypto_int *y)
 {
-    long int U_array[] = {MAX(a, b), 1, 0};
-    long int V_array[] = {MIN(a, b), 0, 1};
-    long int T_array[3];
-    long int q, *swop_p, *U, *V, *T;
+    crypto_int U_array[] = {MAX(a, b), 1, 0};
+    crypto_int V_array[] = {MIN(a, b), 0, 1};
+    crypto_int T_array[3];
+    crypto_int q, *swop_p, *U, *V, *T;
 
     q = MAX(a, b);
     if (q != a) {
@@ -48,9 +48,9 @@ long int gcd(long int a, long int b, long int *x, long int *y)
     return U[0];
 }
 
-bool ferma(long int x)
+bool ferma(crypto_int x)
 {
-    long int a;
+    crypto_int a;
 
     if(!(x % 2)) {
         return false;
@@ -65,13 +65,27 @@ bool ferma(long int x)
     return true;
 }
 
-long int simple_rand()
+crypto_int simple_rand()
 {
-    long int rand_v;
+    crypto_int rand_v;
 
     srand(clock());
     while (1){
         rand_v = rand() + 1;
+        if (ferma(rand_v)) {
+            return rand_v;
+        }
+    }
+    return -1;
+}
+
+crypto_int simple_rand_lim(crypto_int lim)
+{
+    crypto_int rand_v;
+
+    srand(clock());
+    while (1){
+        rand_v = rand() % lim + 1;
         if (ferma(rand_v)) {
             return rand_v;
         }
@@ -90,9 +104,9 @@ long int simple_rand()
 *   K=B^a%p | K=A^b%p
 */
 
-long int DH_A_1(long int *a, long int *g, long int *p)
+crypto_int DH_A_1(crypto_int *a, crypto_int *g, crypto_int *p)
 {
-    long int q = 0;
+    crypto_int q = 0;
     while (!q) {
         *p = simple_rand();
         if (ferma((*p - 1) / 2)) {
@@ -111,30 +125,30 @@ long int DH_A_1(long int *a, long int *g, long int *p)
     } while (*a >= *p - 1);
 
     if (*a == -1 || *g == -1 || *p == -1) return -1;
-    long int A  = expo_mod(*g, *a, *p);
+    crypto_int A  = expo_mod(*g, *a, *p);
     return A;
 }
 
-long int DH_B_1(long int *b, long int g, long int p)
+crypto_int DH_B_1(crypto_int *b, crypto_int g, crypto_int p)
 {
     do {
         *b = simple_rand();
     } while (*b >= p - 1);
     if (*b == -1) return -1;
-    long int B  = expo_mod(g, *b, p);
+    crypto_int B  = expo_mod(g, *b, p);
     return B;
 }
 
-long int DH_AB_2(long int AB, long int ab, long int p)
+crypto_int DH_AB_2(crypto_int AB, crypto_int ab, crypto_int p)
 {
     /* return Key */
     return expo_mod(AB, ab, p);
 }
 
-long int bsgs(long int a, long int b, long int p)
+crypto_int bsgs(crypto_int a, crypto_int b, crypto_int p)
 {
-    long int n = (int) sqrt (p + .0) + 1;
-    long int b_step, i, j, x;
+    crypto_int n = (int) sqrt (p + .0) + 1;
+    crypto_int b_step, i, j, x;
     struct hashtab *h_tab;
 
     h_tab = hashtab_init(n + 1);
@@ -159,12 +173,12 @@ long int bsgs(long int a, long int b, long int p)
     return -1;
 }
 
-long int part_lint(void *m, long int *len)
+crypto_int part_lint(void *m, crypto_int *len)
 {
     unsigned char *mas;
     unsigned char byte;
-    long int res = 0;
-    int size = sizeof(long int);
+    crypto_int res = 0;
+    int size = sizeof(crypto_int);
 
     if (*len < 1) {
         return -1;
@@ -180,10 +194,10 @@ long int part_lint(void *m, long int *len)
     return res;
 }
 
-long int inversion(long int *c, long int *d, long int p)
+crypto_int inversion(crypto_int *c, crypto_int *d, crypto_int p)
 {
-    long int x, y;
-    unsigned long int big_c, big_d, big_p;
+    crypto_int x, y;
+    crypto_int big_c, big_d, big_p;
 
     do {
         *c = simple_rand();

@@ -1,8 +1,8 @@
 #include "decl.h"
 
-long int shamir(long int m)
+crypto_int shamir(crypto_int m)
 {
-    long int c1, d1, x, p;
+    crypto_int c1, d1, x, p;
 
     /* A1 */
     do {
@@ -13,7 +13,7 @@ long int shamir(long int m)
     x = expo_mod(m, c1, p);
 
     /* B1 */
-    long int c2, d2;
+    crypto_int c2, d2;
     inversion(&c2, &d2, p - 1);
     x = expo_mod(x, c2, p);
 
@@ -26,10 +26,10 @@ long int shamir(long int m)
     return x;
 }
 
-long int elgamal(long int m)
+crypto_int elgamal(crypto_int m)
 {
-    long int secret_a, secret_b, g, p;
-    long int free_a, free_b;
+    crypto_int secret_a, secret_b, g, p;
+    crypto_int free_a, free_b;
 
     /* KEY DISTRIB */
     /* A */
@@ -49,7 +49,7 @@ long int elgamal(long int m)
     /* MSG SENDING */
     /* A */
     if (m >= p ) { return -1; }
-    long int k, r, e;
+    crypto_int k, r, e;
 /*    do {
         k = simple_rand();
     } while (k > p - 2);*/
@@ -125,28 +125,28 @@ int vernam_d(char *in_file_name)
     return 0;
 }
 
-long int RSA(long int m)
+crypto_int RSA(crypto_int m)
 {
     /* A */
-    long int p1, q1, n1, fi1, d1, c1;
+    crypto_int p1, q1, n1, fi1, d1, c1;
 
-    p1 = simple_rand();
-    q1 = simple_rand();
+    p1 = simple_rand_lim(RSA_RAND_LIM);
+    q1 = simple_rand_lim(RSA_RAND_LIM);
     n1 = p1 * q1;
     fi1 = (p1 - 1)*(q1 - 1);
-    long int res = inversion(&c1, &d1, fi1);
-    printf("mod = %ld", res);
+    crypto_int res = inversion(&c1, &d1, fi1);
+    printf("mod = %ld\n", res);
     /* B */
-    long int p2, q2, n2, fi2, d2, c2;
+    crypto_int p2, q2, n2, fi2, d2, c2;
 
-    p2 = simple_rand();
-    q2 = simple_rand();
+    p2 = simple_rand_lim(RSA_RAND_LIM);
+    q2 = simple_rand_lim(RSA_RAND_LIM);
     n2 = p2 * q2;
     fi2 = (p2 - 1)*(q2 - 1);
     inversion(&c2, &d2, fi2);
 
     /* A */
-    long int e = expo_mod(m, d2, n2);
+    crypto_int e = expo_mod(m, d2, n2);
 
     /* B */
     return expo_mod(e, c2, n2);

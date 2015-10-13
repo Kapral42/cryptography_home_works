@@ -43,7 +43,6 @@ int main(int argc, const char *argv[])
             a = simple_rand() - 1;
             b = simple_rand() - 1;
             b = a * b;
-            a++;
             res = gcd(a, b, &x, &y);
             printf("gcd: %ld, %ld  x=%ld y=%ld gcd=%ld\n", a, b, x, y, res);
             printf("x y check: %ld\n", a*x + b*y);

@@ -38,7 +38,7 @@ int main(int argc, const char *argv[])
 
     printf("\nRSA\n");
     for (int i = 0; i < 5; i++) {
-        x = simple_rand();
+        x = simple_rand() % 256;
         y = RSA(x);
         printf("sent:%ld, received:%ld %s\n", x, y, x == y ? "PASSED" : "FAILED");
     }
