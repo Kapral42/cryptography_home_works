@@ -26,8 +26,21 @@ crypto_int shamir(crypto_int m)
     return x;
 }
 
-crypto_int elgamal(crypto_int m)
+crypto_int elgamal_e(char* in_file_name)
 {
+    FILE* in_file = fopen(in_file_name, "rb");
+
+    char* file_name = strcat(in_file_name, ".pelg");
+    FILE* s_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    char* file_name = strcat(in_file_name, ".selg");
+    FILE* s_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".elg");
+    FILE* out_file = fopen(in_file_name, "wb");
+    unsigned char byte;
     crypto_int secret_a, secret_b, g, p;
     crypto_int free_a, free_b;
 
@@ -36,39 +49,71 @@ crypto_int elgamal(crypto_int m)
     free_a = DH_A_1(&secret_a, &g, &p);
     /* B */
     free_b = DH_B_1(&secret_b, g, p);
-/*
-    p = 23;
-    g = 5;
-    secret_a = 19;
-    secret_b = 11;
-    free_b = expo_mod(g, secret_a, p);
-    free_b = expo_mod(g, secret_b, p);
-*/
-//    free_a = DH_AB_2(free_a, secret_b, p);
-//    free_b = DH_AB_2(free_b, secret_a, p);
+    fwrite(&secret_b, 8, 1, s_keys_file);
+    fwrite(&g, 8, 1, p_keys_file);
+    fwrite(&p, 8, 1, p_keys_file);
 
     /* MSG SENDING */
     /* A */
-    if (m >= p ) { return -1; }
     crypto_int k, r, e;
-    do {
-        k = random();
-    } while (k > p - 2);
-  //  k = 11;
-    r = expo_mod(g, k, p);
-    e = m * expo_mod(free_b, k, p) % p;
+
+    while (!feof(in_file)) {
+        if (m >= p ) { return -1; }
+        k = random() % (p - 2);
+        fread(&byte, 1, 1, in_file);
+        if (feof(in_file)) {
+            break;
+        }
+        r = expo_mod(g, k, p);
+        e = m * expo_mod(free_b, k, p) % p;
+        fwrite(&r, 8, 1, out_file);
+        fwrite(&e, 8, 1, out_file);
+    }
 
     /* Sending e and r to B */
 
-    /* B */
-    printf("k = %ld\n", k);
-    printf("e = %ld\n", e);
+   // printf("k = %ld\n", k);
+   // printf("e = %ld\n", e);
+    fclose(out_file);
+    fclose(in_file);
+    fclose(s_keys_file);
+    fclose(p_keys_file);
     return e * expo_mod(r, p - 1 - secret_b, p) % p;
 }
 
-int elgamal_e(char* file_name)
+crypto_int elgamal_d(char *in_file_name)
 {
-    
+    char *file_name = strcat(in_file_name, ".elg");
+    FILE* in_file = fopen(file_name, "rb");
+    file_name[strlen(file_name) - 4] = '\0';
+
+    file_name = strcat(in_file_name, ".selg");
+    FILE* s_keys_file = fopen(file_name, "rb+");
+    file_name[strlen(file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".elg.s");
+    FILE* out_file = fopen(file_name, "wb");
+    unsigned char byte;
+
+    crypto_int buf, r, e, g, p, secret_b;
+    fread(&g, 8, 1, p_keys_file);
+    fread(&p, 8, 1, p_keys_file);
+    fread(&secret_b, 8, 1, s_keys_file);
+    while (!feof(in_file)) {
+        fread(&r, 8, 1, in_file);
+        fread(&e, 8, 1, in_file);
+        if (feof(in_file)) {
+            break;
+        }
+        buf = e * expo_mod(r, p - 1 - secret_b, p) % p;
+        byte = (unsigned char) buf;
+        fwrite(&byte, 1, 1, out_file);
+    }
+
+    fclose(out_file);
+    fclose(in_file);
+    fclose(s_keys_file);
+    fclose(p_keys_file);
     return 0;
 }
 

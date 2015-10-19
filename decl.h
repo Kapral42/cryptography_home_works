@@ -36,7 +36,8 @@ crypto_int inversion(crypto_int *c, crypto_int *d, crypto_int p);
 crypto_int shamir(crypto_int m);
 int vernam_e(char *in_file_name);
 int vernam_d(char *in_file_name);
-crypto_int elgamal(crypto_int m);
+crypto_int elgamal_e(char *in_file_name)
+crypto_int elgamal_d(char *in_file_name)
 crypto_int RSA_e(char *in_file_name);
 crypto_int RSA_d(char *in_file_name);
 

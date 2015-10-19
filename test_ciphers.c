@@ -27,10 +27,18 @@ int main(int argc, const char *argv[])
     }
 
     printf("\nEl Gamal\n");
-    for (int i = 0; i < 5; i++) {
-        x = random() % 256;
-        y = elgamal(x);
-        printf("sent:%ld, received:%ld %s\n", x, y, x == y ? "PASSED" : "FAILED");
+    char f_name_elg[] = "files/test_file";
+    if (RSA_e(f_name_elg)) {
+        printf("RSA encode ERROR\n");
+    }
+    f_name_elg[15] = '\0';
+    if (RSA_d(f_name_rsa)) {
+        printf("RSA decode ERROR\n");
+    }
+    if (!system("diff files/test_file files/test_file.elg.s > /dev/null")) {
+        printf("PASSED\n");
+    } else {
+        printf("FAILED\n");
     }
 
     printf("\nRSA\n");
