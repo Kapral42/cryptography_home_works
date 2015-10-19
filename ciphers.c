@@ -36,13 +36,14 @@ crypto_int elgamal(crypto_int m)
     free_a = DH_A_1(&secret_a, &g, &p);
     /* B */
     free_b = DH_B_1(&secret_b, g, p);
-
+/*
     p = 23;
     g = 5;
     secret_a = 19;
     secret_b = 11;
     free_b = expo_mod(g, secret_a, p);
     free_b = expo_mod(g, secret_b, p);
+*/
 //    free_a = DH_AB_2(free_a, secret_b, p);
 //    free_b = DH_AB_2(free_b, secret_a, p);
 
@@ -50,19 +51,25 @@ crypto_int elgamal(crypto_int m)
     /* A */
     if (m >= p ) { return -1; }
     crypto_int k, r, e;
-/*    do {
-        k = simple_rand();
-    } while (k > p - 2);*/
-    k = 11;
+    do {
+        k = random();
+    } while (k > p - 2);
+  //  k = 11;
     r = expo_mod(g, k, p);
-    e = m * expo_mod(free_b, k, p);
+    e = m * expo_mod(free_b, k, p) % p;
 
     /* Sending e and r to B */
 
     /* B */
     printf("k = %ld\n", k);
     printf("e = %ld\n", e);
-    return e * expo_mod(r, p - 1 - secret_b, p);
+    return e * expo_mod(r, p - 1 - secret_b, p) % p;
+}
+
+int elgamal_e(char* file_name)
+{
+    
+    return 0;
 }
 
 int vernam_e(char *in_file_name)
@@ -84,6 +91,7 @@ int vernam_e(char *in_file_name)
         if (feof(in_file)) {
             break;
         }
+        //rand
         key = simple_rand() % 256;
         e = byte ^ key;
         fwrite(&e, 1, 1, encoded_file);
@@ -125,8 +133,21 @@ int vernam_d(char *in_file_name)
     return 0;
 }
 
-crypto_int RSA(crypto_int m)
+crypto_int RSA_e(char *in_file_name)
 {
+    FILE* in_file = fopen(in_file_name, "rb");
+    char* file_name = strcat(in_file_name, ".pkey");
+    FILE* p_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".skey");
+    FILE* s_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".rsa");
+    FILE* out_file = fopen(in_file_name, "wb");
+    unsigned char byte;
+
     /* A */
     crypto_int p1, q1, n1, fi1, d1, c1;
 
@@ -134,8 +155,7 @@ crypto_int RSA(crypto_int m)
     q1 = simple_rand_lim(RSA_RAND_LIM);
     n1 = p1 * q1;
     fi1 = (p1 - 1)*(q1 - 1);
-    crypto_int res = inversion(&c1, &d1, fi1);
-    printf("mod = %ld\n", res);
+    inversion(&c1, &d1, fi1);
     /* B */
     crypto_int p2, q2, n2, fi2, d2, c2;
 
@@ -144,10 +164,62 @@ crypto_int RSA(crypto_int m)
     n2 = p2 * q2;
     fi2 = (p2 - 1)*(q2 - 1);
     inversion(&c2, &d2, fi2);
+    fwrite(&c2, 8, 1, s_keys_file);
+    fwrite(&n2, 8, 1, p_keys_file);
+    fwrite(&d2, 8, 1, p_keys_file);
+
 
     /* A */
-    crypto_int e = expo_mod(m, d2, n2);
+    crypto_int e;
+    while (!feof(in_file)) {
+        fread(&byte, 1, 1, in_file);
+        if (feof(in_file)) {
+            break;
+        }
+        e = expo_mod((crypto_int)byte, d2, n2);
+        fwrite(&e, 8, 1, out_file);
+    }
+    fclose(out_file);
+    fclose(in_file);
+    fclose(s_keys_file);
+    fclose(p_keys_file);
+    return 0;
+}
 
-    /* B */
-    return expo_mod(e, c2, n2);
+crypto_int RSA_d(char *in_file_name)
+{
+    char *file_name = strcat(in_file_name, ".rsa");
+    FILE* in_file = fopen(file_name, "rb");
+    file_name[strlen(file_name) - 4] = '\0';
+
+    file_name = strcat(in_file_name, ".pkey");
+    FILE* p_keys_file = fopen(file_name, "rb+");
+    file_name[strlen(file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".skey");
+    FILE* s_keys_file = fopen(file_name, "rb+");
+    file_name[strlen(file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".rsa.s");
+    FILE* out_file = fopen(file_name, "wb");
+    unsigned char byte;
+
+    crypto_int buf, c, n;
+    fread(&c, 8, 1, s_keys_file);
+    fread(&n, 8, 1, p_keys_file);
+    while (!feof(in_file)) {
+        fread(&buf, 8, 1, in_file);
+        if (feof(in_file)) {
+            break;
+        }
+        buf = expo_mod(buf, c, n);
+        byte = (unsigned char) buf;
+        fwrite(&byte, 1, 1, out_file);
+    }
+
+    fclose(out_file);
+    fclose(in_file);
+    fclose(s_keys_file);
+    fclose(p_keys_file);
+    return 0;
 }

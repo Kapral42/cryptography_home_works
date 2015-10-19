@@ -93,6 +93,12 @@ crypto_int simple_rand_lim(crypto_int lim)
     return -1;
 }
 
+crypto_int random()
+{
+    srand(clock());
+    return rand() + 1;
+}
+
 /*
 *   User A  |  User B
 *   a, g, p |    b
@@ -115,7 +121,7 @@ crypto_int DH_A_1(crypto_int *a, crypto_int *g, crypto_int *p)
     }
     *g = 0;
     while (!*g) {
-        *g = simple_rand();
+        *g = random();
         if (*g >= *p - 1 || expo_mod(*g, q, *p) == 1) {
            *g = 0;
         }

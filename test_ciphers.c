@@ -28,19 +28,24 @@ int main(int argc, const char *argv[])
 
     printf("\nEl Gamal\n");
     for (int i = 0; i < 5; i++) {
-        x = simple_rand();
+        x = random() % 256;
         y = elgamal(x);
         printf("sent:%ld, received:%ld %s\n", x, y, x == y ? "PASSED" : "FAILED");
     }
-        x = 12;
-        y = elgamal(x);
-        printf("sent:%ld, received:%ld %s\n", x, y, x == y ? "PASSED" : "FAILED");
 
     printf("\nRSA\n");
-    for (int i = 0; i < 5; i++) {
-        x = simple_rand() % 256;
-        y = RSA(x);
-        printf("sent:%ld, received:%ld %s\n", x, y, x == y ? "PASSED" : "FAILED");
+    char f_name_rsa[] = "files/test_file";
+    if (RSA_e(f_name_rsa)) {
+        printf("RSA encode ERROR\n");
+    }
+    f_name_rsa[15] = '\0';
+    if (RSA_d(f_name_rsa)) {
+        printf("RSA decode ERROR\n");
+    }
+    if (!system("diff files/test_file files/test_file.rsa.s > /dev/null")) {
+        printf("PASSED\n");
+    } else {
+        printf("FAILED\n");
     }
 
     return 0;

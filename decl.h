@@ -24,6 +24,7 @@ crypto_int gcd(crypto_int a, crypto_int b, crypto_int *x, crypto_int *y);
 bool ferma(crypto_int x);
 crypto_int simple_rand();
 crypto_int simple_rand_lim(crypto_int lim);
+crypto_int random();
 crypto_int DH_A_1(crypto_int *a, crypto_int *g, crypto_int *p);
 crypto_int DH_B_1(crypto_int *b, crypto_int g, crypto_int p);
 crypto_int DH_AB_2(crypto_int AB, crypto_int ab, crypto_int p);
@@ -36,6 +37,7 @@ crypto_int shamir(crypto_int m);
 int vernam_e(char *in_file_name);
 int vernam_d(char *in_file_name);
 crypto_int elgamal(crypto_int m);
-crypto_int RSA(crypto_int m);
+crypto_int RSA_e(char *in_file_name);
+crypto_int RSA_d(char *in_file_name);
 
 #endif
