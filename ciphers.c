@@ -31,10 +31,10 @@ crypto_int elgamal_e(char* in_file_name)
     FILE* in_file = fopen(in_file_name, "rb");
 
     char* file_name = strcat(in_file_name, ".pelg");
-    FILE* s_keys_file = fopen(in_file_name, "wb");
+    FILE* p_keys_file = fopen(in_file_name, "wb");
     file_name[strlen(in_file_name) - 5] = '\0';
 
-    char* file_name = strcat(in_file_name, ".selg");
+    file_name = strcat(in_file_name, ".selg");
     FILE* s_keys_file = fopen(in_file_name, "wb");
     file_name[strlen(in_file_name) - 5] = '\0';
 
@@ -58,14 +58,14 @@ crypto_int elgamal_e(char* in_file_name)
     crypto_int k, r, e;
 
     while (!feof(in_file)) {
-        if (m >= p ) { return -1; }
         k = random() % (p - 2);
         fread(&byte, 1, 1, in_file);
         if (feof(in_file)) {
             break;
         }
+        if ((crypto_int) byte >= p ) { return -1; }
         r = expo_mod(g, k, p);
-        e = m * expo_mod(free_b, k, p) % p;
+        e = byte * expo_mod(free_b, k, p) % p;
         fwrite(&r, 8, 1, out_file);
         fwrite(&e, 8, 1, out_file);
     }
@@ -78,7 +78,7 @@ crypto_int elgamal_e(char* in_file_name)
     fclose(in_file);
     fclose(s_keys_file);
     fclose(p_keys_file);
-    return e * expo_mod(r, p - 1 - secret_b, p) % p;
+    return 0;
 }
 
 crypto_int elgamal_d(char *in_file_name)
@@ -89,6 +89,10 @@ crypto_int elgamal_d(char *in_file_name)
 
     file_name = strcat(in_file_name, ".selg");
     FILE* s_keys_file = fopen(file_name, "rb+");
+    file_name[strlen(file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".pelg");
+    FILE* p_keys_file = fopen(file_name, "rb+");
     file_name[strlen(file_name) - 5] = '\0';
 
     file_name = strcat(in_file_name, ".elg.s");
