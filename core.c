@@ -206,7 +206,7 @@ crypto_int inversion(crypto_int *c, crypto_int *d, crypto_int p)
     crypto_int big_c, big_d, big_p;
 
     do {
-        *c = simple_rand();
+        *c = random();
     } while (gcd(*c, p, &x, &y) != 1);
 
     big_c = *c;

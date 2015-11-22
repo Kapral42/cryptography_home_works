@@ -48,6 +48,25 @@ int sgn_RSA_create(char *in_file_name);
 int sgn_RSA_check(char *in_file_name);
 int sgn_elgamal_create(char* in_file_name);
 int sgn_elgamal_check(char* in_file_name);
+int sgn_gost_create(char* in_file_name);
+int sgn_gost_check(char* in_file_name);
 
+/* poker */
+struct t_players {
+    crypto_int cards[2];
+    int index[2];
+    crypto_int crypt;
+    crypto_int decrypt;
+} *players;
+
+struct t_cards {
+    crypto_int id;
+    bool free;
+} *cards;
+crypto_int p;
+
+int poker_init(int n_players);
+void poker_print_card(crypto_int id);
+crypto_int poker_distrib(int p_id, char task, int index);
 
 #endif

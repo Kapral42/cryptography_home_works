@@ -133,8 +133,8 @@ int sgn_elgamal_create(char* in_file_name)
         return 1;
     }
 
-    inversion(&k, &k_inv, p - 1);
     for (int i = 0; i < 16; i++) {
+        inversion(&k, &k_inv, p - 1);
         h = (crypto_int) md_context.digest[i];
         if ((crypto_int) h >= p ) { return -1; }
         r = expo_mod(g, k, p);
@@ -200,3 +200,125 @@ int sgn_elgamal_check(char* in_file_name)
     return 0;
 }
 
+int sgn_gost_create(char* in_file_name)
+{
+    FILE* in_file = fopen(in_file_name, "rb");
+
+    char* file_name = strcat(in_file_name, ".pgst");
+    FILE* p_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".sgst");
+    FILE* s_keys_file = fopen(in_file_name, "wb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".sgn_gst");
+    FILE* out_file = fopen(in_file_name, "wb");
+
+    crypto_int q, b, y;
+    crypto_int p;
+    crypto_int a, s, r, k, h , x;
+
+    do {
+        q = simple_rand_lim(5000);
+        b = random() % 100000;
+        p = b * q + 1;
+    } while (!ferma(p));
+
+    do {
+        a = random() % p;
+        a = expo_mod(a, b, p);
+    } while (a == 1);
+    x = random() % q;
+    y = expo_mod(a, x, p);
+
+    fwrite(&p, 8, 1, p_keys_file);
+    fwrite(&q, 8, 1, p_keys_file);
+    fwrite(&a, 8, 1, p_keys_file);
+    fwrite(&y, 8, 1, p_keys_file);
+    fwrite(&x, 8, 1, s_keys_file);
+
+    MD5_CTX md_context;
+    if (MDFile(in_file, &md_context)) {
+        return 1;
+    }
+
+    for (int i = 0; i < 16; i++) {
+        h = (crypto_int) md_context.digest[i];
+        while (1) {
+            k = random() % q;
+            r = expo_mod(a, k, p) % q;
+            if (r == 0) {
+                continue;
+            }
+            s = (k * h + x * r) % q;
+            if (s > 0) {
+                break;
+            }
+        }
+        fwrite(&r, 8, 1, out_file);
+        fwrite(&s, 8, 1, out_file);
+    }
+
+    fclose(out_file);
+    fclose(in_file);
+    fclose(s_keys_file);
+    fclose(p_keys_file);
+    return 0;
+}
+
+int sgn_gost_check(char* in_file_name)
+{
+    FILE* in_file = fopen(in_file_name, "rb");
+
+    char* file_name = strcat(in_file_name, ".pgst");
+    FILE* p_keys_file = fopen(in_file_name, "rb");
+    file_name[strlen(in_file_name) - 5] = '\0';
+
+    file_name = strcat(in_file_name, ".sgn_gst");
+    FILE* out_file = fopen(in_file_name, "rb");
+    crypto_int q, p, a, y;
+
+    fread(&p, 8, 1, p_keys_file);
+    fread(&q, 8, 1, p_keys_file);
+    fread(&a, 8, 1, p_keys_file);
+    fread(&y, 8, 1, p_keys_file);
+
+    crypto_int r, h, h_inv, s, gcd_x, u1, u2, v;
+
+    MD5_CTX md_context;
+    if (MDFile(in_file, &md_context)) {
+        return 1;
+    }
+
+    int flg = 0;
+    for (int i = 0; i < 16; i++) {
+        h = (crypto_int) md_context.digest[i];
+        fread(&r, 8, 1, out_file);
+        fread(&s, 8, 1, out_file);
+        if (r >= q || s >= q) {
+            flg = 1;
+            break;
+        }
+        gcd(h, q, &gcd_x, NULL);
+        h_inv = gcd_x < 0 ? q + gcd_x : gcd_x;
+//        printf("check inv %ld", (h * h_inv) % q);
+        u1 = (s * h_inv) % q;
+        u2 = (-r * h_inv) % q;
+        u2 += u2 < 0 ? q : 0;
+        v = ((expo_mod(a, u1, p) * expo_mod(y, u2, p)) % p) % q;
+//       printf("v %ld, r %ld\n", v, r);
+        if (v != r) {
+            flg = 1;
+            break;
+        }
+    }
+
+    fclose(out_file);
+    fclose(in_file);
+    fclose(p_keys_file);
+
+    if (flg)
+        return 1;
+    return 0;
+}
