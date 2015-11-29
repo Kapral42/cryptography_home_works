@@ -6,7 +6,7 @@ int main(int argc, const char *argv[])
 
     printf("Test expo_mod:\n");
     {
-        long int res = expo_mod(3, 100, 7);
+        long int res = expo_mod(1248288702, 840861, 3997717081) % 965;
         printf("res: %ld\n", res);
     }
 
@@ -14,8 +14,8 @@ int main(int argc, const char *argv[])
     {
         long int x, y, z, a, b, res;
         a = 35; b = 18;
-        z = gcd(35, 18, &x, &y);
-        printf("gcd: 35 18 x=%ld y=%ld gcd=%ld\n", x, y, z);
+        z = gcd(3486, 1725903725, &x, &y);
+        printf("gcd+++++: 35 18 x=%ld y=%ld gcd=%ld\n", x, y, z);
         printf("x y check: %ld\n", a*x + b*y);
         a = 19; b = 3;
         z = gcd(19, 3, &x, &y);

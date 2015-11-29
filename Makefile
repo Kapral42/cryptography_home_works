@@ -3,7 +3,7 @@ test=core
 endif
 
 prog := prog
-prog_objs := core.o hashtab.o ciphers.o signatures.o md5.o poker.o test_$(test).o
+prog_objs := core.o hashtab.o ciphers.o signatures.o md5.o poker.o dcache.o test_$(test).o
 
 CXX := gcc
 CXXFLAGS := -g -std=c11 -Wall -O0

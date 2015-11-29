@@ -69,4 +69,13 @@ int poker_init(int n_players);
 void poker_print_card(crypto_int id);
 crypto_int poker_distrib(int p_id, char task, int index);
 
+/* digital cache */
+#define B_INIT 0
+#define B_SGN 1
+#define B_CHECK 2
+
+crypto_int bank(crypto_int stage, crypto_int arg1, crypto_int arg2, crypto_int arg3);
+int store(crypto_int x, crypto_int y, crypto_int z);
+int buyer();
+
 #endif
