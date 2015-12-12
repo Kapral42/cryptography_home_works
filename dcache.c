@@ -20,15 +20,25 @@ struct t_bils {
 
 crypto_int bank_N, bank_d[N_NOMIN];
 
+static void MD5 (crypto_int x, MD5_CTX *mdContext)
+{
+  int bytes = sizeof(crypto_int);
+
+  MD5Init (mdContext);
+  MD5Update (mdContext, (unsigned char*)&x, bytes);
+  MD5Final (mdContext);
+//  MDPrint (mdContext);
+}
+
 crypto_int bank(crypto_int stage, crypto_int arg1, crypto_int arg2, crypto_int arg3)
 {
-    int i, j, bil_i;
+    int i, bil_i;
 
     /* Safe */
     //static struct t_bils bils_count[N_NOMIN];
   //  int bils_count[N_NOMIN];
     static int custom_cache;
-    static crypto_int P, Q, fi, n_, n, s;
+    static crypto_int P, Q, fi, n_, n, s, h;
     static crypto_int c[N_NOMIN];
 
     switch (stage) {
@@ -60,7 +70,15 @@ crypto_int bank(crypto_int stage, crypto_int arg1, crypto_int arg2, crypto_int a
             n = arg1;
             s = arg2;
             bil_i = arg3;
-            if (bil_i >= 0 && n == expo_mod(s, bank_d[bil_i], bank_N)) {
+
+            MD5_CTX mdContext;
+            MD5(n, &mdContext);
+            h = 0;
+            for (int k = 0; k < 16; k++) {
+                h += mdContext.digest[k];
+            }
+
+            if (bil_i >= 0 && h == expo_mod(s, bank_d[bil_i], bank_N)) {
                 return 0;
             }
             return 1;
@@ -83,7 +101,7 @@ int buyer()
 {
     int money, i, j;
     int bils[N_NOMIN];
-    crypto_int n, n_, r, r_, s_, s;
+    crypto_int n, n_, r, r_, s_, s, h;
 
     printf("How much money will you spend? : ");
     scanf("%d", &money);
@@ -101,26 +119,40 @@ int buyer()
         }
         i--;
     }
+
+    printf("Nominations:\n");
     for (i = 0; i < N_NOMIN; i++) {
-        printf("%d(%d) ", nomin[i], bils[i]);
+        if (bils[i] != 0)
+            printf("%d:(%d) ", nomin[i], bils[i]);
     }
     printf("\n");
 
-    for (i = 0; i < N_NOMIN; i++) {
+    for (i = N_NOMIN - 1; i >= 0; i--) {
         for (j = 0; j < bils[i]; j++) {
+            printf("__________________________%d$__________________________\n", nomin[i]);
             n = random() % B_RAND_MAX;
             inversion(&r, &r_, bank_N);
-            n_ = (n * expo_mod(r, bank_d[i], bank_N)) % bank_N;
+
+            MD5_CTX mdContext;
+            MD5(n, &mdContext);
+            h = 0;
+            for (int k = 0; k < 16; k++) {
+                h += mdContext.digest[k];
+            }
+
+            n_ = (h * expo_mod(r, bank_d[i], bank_N)) % bank_N;
             s_ = bank(B_SGN, n_, (crypto_int) i, 0);
             if (s_ < 0) {
-                printf("Payment of the money faild\n");
+                printf("Payment of the money from bank faild\n");
                 return 1;
             }
+            printf("Payment of the money from bank successfully\n");
             s = s_* r_ % bank_N;
-            printf("Bil %d (%d) n(%ld) s(%ld)\n", nomin[i], j, n, s);
-            printf("n_ %ld\n", n_);
-            printf("s^d %ld\n", expo_mod(s, bank_d[i], bank_N));
+            printf("Bank note: %d$ (%d) No(%ld %ld)\n", nomin[i], j + 1, n, s);
+          //  printf("n_ %ld\n", n_);
+          //  printf("s^d %ld\n", expo_mod(s, bank_d[i], bank_N));
             store(n, s, (crypto_int) i);
+            printf("_________________________________________________________\n\n");
         }
     }
 

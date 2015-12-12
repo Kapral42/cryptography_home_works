@@ -78,4 +78,9 @@ crypto_int bank(crypto_int stage, crypto_int arg1, crypto_int arg2, crypto_int a
 int store(crypto_int x, crypto_int y, crypto_int z);
 int buyer();
 
+/* graph */
+int graph_owner(char *fname, int a);
+int graph_checker(int stage, crypto_int argsi[]);
+
+
 #endif
