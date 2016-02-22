@@ -46,7 +46,7 @@ int graph_owner(char *fname, int a)
         fscanf(file, "%d %d", &edges[i].first ,&edges[i].second);
         edges[i].first--;
         edges[i].second--;
- //       verts[edges[i].first].edges[edges[i].second] = 1;
+   //     verts[edges[i].first].edges[edges[i].second] = 1;
    //     verts[edges[i].second].edges[edges[i].first] = 1;
         printf("Edge %d : %d <----> %d\n", i, edges[i].first, edges[i].second);
     }

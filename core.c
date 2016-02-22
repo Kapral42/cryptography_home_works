@@ -52,14 +52,14 @@ bool ferma(crypto_int x)
 {
     crypto_int a;
 
-    if(!(x % 2)) {
+    if (!(x % 2)) {
         return false;
     }
     for(int i = 0; i < 100; i++){
         a = (rand() % (x - 2)) + 2;
         if (gcd(a, x, NULL, NULL) != 1)
             return false;
-        if( expo_mod(a, x - 1, x) != 1)
+        if ( expo_mod(a, x - 1, x) != 1)
             return false;
     }
     return true;
